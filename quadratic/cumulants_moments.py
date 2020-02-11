@@ -4,10 +4,11 @@ References:
     [Moh12] Ali A Mohsenipour, "On the Distribution of Quadratic Expressions
         in Various Types of Random Vectors," PhD thesis, University of Western Ontario, 2012.
 """
+from math import factorial
 import numpy as np
 from numpy.linalg import matrix_power
-from math import factorial
 from scipy.special import gamma as gamma_func
+from scipy.special import hyp1f1
 
 def cumulant_quad_form(s: int, mean: np.ndarray,
                        covar: np.ndarray, A: np.ndarray):
@@ -82,3 +83,18 @@ def gamma_moment(i, alpha, beta):
         beta: scale parameter
     """
     return beta**i * gamma_func(alpha + i) / gamma_func(alpha)
+
+def normal_moment(i, mu, sigma):
+    """Compute a moment (about 0) of a normal distribution.
+
+    See https://arxiv.org/pdf/1209.4340
+    """
+
+    if i % 2 == 0:
+        return (
+            sigma**i * 2**(i / 2) * gamma_func((i + 1) / 2) / np.pi**0.5
+            * hyp1f1(-i / 2, 0.5, - mu**2 / (2 * sigma**2)))
+    return (
+        mu * sigma**(i - 1) * 2**((i + 1) / 2)
+        * gamma_func(i / 2 + 1) / np.pi**0.5
+        * hyp1f1((1 - i) / 2, 1.5, - mu**2 / (2 * sigma**2)))

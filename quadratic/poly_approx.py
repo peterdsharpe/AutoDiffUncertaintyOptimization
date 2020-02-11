@@ -9,10 +9,10 @@ References:
 
 import numpy as np
 import scipy.stats
-from cumulants_moments import gamma_moment
+from cumulants_moments import gamma_moment, normal_moment
 from matplotlib import pyplot as plt
 
-def poly_approx(mu):
+def poly_approx(mu, base='normal'):
     """
     Arguments:
         mu: target moments
@@ -23,20 +23,28 @@ def poly_approx(mu):
     n = len(mu) - 1
 
     # Parameters of the base gamma distribution.
-    alpha = mu[1]**2 / (mu[2] - mu[1]**2)
-    beta = mu[2] / mu[1] - mu[1]
-    base = scipy.stats.gamma(alpha, scale=beta)
+    if base == 'gamma':
+        alpha = mu[1]**2 / (mu[2] - mu[1]**2)
+        beta = mu[2] / mu[1] - mu[1]
+        base_dist = scipy.stats.gamma(alpha, scale=beta)
+    elif base == 'normal':
+        std_dev = (mu[2] - mu[1]**2)**0.5
+        base_dist = scipy.stats.norm(
+            loc=mu[1], scale=std_dev)
 
     # Create the matrix M of base distribution moments
     M = np.zeros((n + 1, n + 1))
     indexes = np.array(range(n + 1))
     for h in range(n + 1):
-        M[h] = gamma_moment(h + indexes, alpha, beta)
+        if base == 'gamma':
+            M[h] = gamma_moment(h + indexes, alpha, beta)
+        if base == 'normal':
+            M[h] = [normal_moment(h + i, mu[1], std_dev) for i in indexes]
 
     coefs = np.linalg.solve(M, mu)
 
     coefs_flipped = np.flip(coefs)
-    approx = lambda x: base.pdf(x) * np.polyval(coefs_flipped, x)
+    approx = lambda x: base_dist.pdf(x) * np.polyval(coefs_flipped, x)
     return approx
 
 
@@ -44,7 +52,7 @@ def demo():
     true_dist = scipy.stats.gamma(1)
     # Moments (about 0) of the gamma distribution with alpha = beta = 1
     target_moments = np.array([1., 1., 2., 6., 24., 120.])
-    approx = poly_approx(target_moments)
+    approx = poly_approx(target_moments, base='gamma')
     x = np.linspace(0, 10)
 
     plt.plot(
@@ -61,11 +69,10 @@ def demo():
 
 
 def demo2():
-    """This is flawed -- trying to match a distribution on (0, inf) to one on (-inf, inf)"""
     true_dist = scipy.stats.norm(5, 2)
     # Moments (about 0)
     target_moments = np.array([true_dist.moment(i) for i in range(3)])
-    approx = poly_approx(target_moments)
+    approx = poly_approx(target_moments, base='normal')
     x = np.linspace(0, 10)
 
     plt.plot(
@@ -92,7 +99,7 @@ def demo3():
         # Moments (about 0)
         target_moments = np.array([
             true_dist.moment(i) for i in range(n)])
-        approx = poly_approx(target_moments)
+        approx = poly_approx(target_moments, base='gamma')
         plt.plot(
             x, approx(x), label='Approx. {:d} moments'.format(n),
             linestyle='--')
@@ -105,4 +112,4 @@ def demo3():
     plt.show()
 
 if __name__ == '__main__':
-    demo3()
+    demo2()
