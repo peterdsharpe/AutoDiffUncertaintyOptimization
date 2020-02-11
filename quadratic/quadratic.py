@@ -6,6 +6,7 @@ References:
 import numpy as np
 from numpy.linalg import matrix_power
 from math import factorial
+from scipy.special import gamma as gamma_func
 
 def cumulant_quad_form(s: int, mean: np.ndarray,
                        covar: np.ndarray, A: np.ndarray):
@@ -64,3 +65,19 @@ def moments_from_cumulants(k: np.ndarray):
                 * k[h - i - 1] * moments[i]
                 )
     return moments
+
+
+def gamma_moment(i, alpha, beta):
+    """Compute a moment (about zero) of a gamma distribution.
+
+    There are different notations for the parameters of the
+    gamma distribution. The notation used here matches [Moh12].
+    It is different than the notation used on the Wikipedia page
+    (wikipedia k = alpha here, wiki theta = beta here).
+
+    Arguments:
+        i: which moment
+        alpha: shape parameter
+        beta: scale parameter
+    """
+    return beta**i * gamma_func(alpha + i) / gamma_func(alpha)

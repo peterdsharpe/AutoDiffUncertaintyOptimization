@@ -75,3 +75,18 @@ class TestCumulantQuadForm():
 
             ### Verification ###
             np.testing.assert_array_equal(cumulants, correct_cumulants)
+
+class TestGammaMoment():
+    """Unit tests for gamma_moment."""
+
+    def test_1_1(self):
+        ### Setup ###
+        # Moments (about 0) of the gamma distribution with alpha = beta = 1
+        correct_moments = np.array([1., 1., 2., 6., 24., 120.])
+        i = np.array(range(len(correct_moments)))
+
+        ### Action ###
+        moments = quadratic.gamma_moment(i, alpha=1., beta=1.)
+
+        ### Verification ###
+        np.testing.assert_array_equal(moments, correct_moments)
