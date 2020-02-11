@@ -4,7 +4,7 @@ from pytest import approx
 from statsmodels.stats.moment_helpers import mc2mnc, cum2mc
 from math import factorial
 
-import quadratic
+import cumulants_moments
 
 class TestMomentsFromCumulants():
     """Unit tests for moments_from_cumulants."""
@@ -17,7 +17,7 @@ class TestMomentsFromCumulants():
         correct_moments = np.array([1., 0., 1., 0., 3.])
 
         ### Action ###
-        moments = quadratic.moments_from_cumulants(k)
+        moments = cumulants_moments.moments_from_cumulants(k)
 
         ### Verification ###
         assert len(moments) == len(correct_moments)
@@ -32,7 +32,7 @@ class TestMomentsFromCumulants():
         correct_moments = np.array([1., 1., 2., 6., 24., 120.])
 
         ### Action ###
-        moments = quadratic.moments_from_cumulants(k)
+        moments = cumulants_moments.moments_from_cumulants(k)
 
         ### Verification ###
         assert len(moments) == len(correct_moments)
@@ -45,7 +45,7 @@ class TestMomentsFromCumulants():
         sm_moments = np.insert(mc2mnc(cum2mc(k)), 0, 1)
 
         ### Action ###
-        moments = quadratic.moments_from_cumulants(k)
+        moments = cumulants_moments.moments_from_cumulants(k)
 
         ### Verification ###
         assert len(moments) == len(sm_moments)
@@ -70,7 +70,7 @@ class TestCumulantQuadForm():
             ### Action ###
             for s in range(1, n_cumulants + 1):
                 correct_cumulants[s - 1] = 2**(s - 1) * factorial(s - 1) * dof
-                cumulants[s - 1] = quadratic.cumulant_quad_form(
+                cumulants[s - 1] = cumulants_moments.cumulant_quad_form(
                     s, mean, covar, A)
 
             ### Verification ###
@@ -86,7 +86,7 @@ class TestGammaMoment():
         i = np.array(range(len(correct_moments)))
 
         ### Action ###
-        moments = quadratic.gamma_moment(i, alpha=1., beta=1.)
+        moments = cumulants_moments.gamma_moment(i, alpha=1., beta=1.)
 
         ### Verification ###
         np.testing.assert_array_equal(moments, correct_moments)

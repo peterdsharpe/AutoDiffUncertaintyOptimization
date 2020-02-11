@@ -1,4 +1,5 @@
-"""
+"""Functions for cumulants and moments of various distributions.
+
 References:
     [Moh12] Ali A Mohsenipour, "On the Distribution of Quadratic Expressions
         in Various Types of Random Vectors," PhD thesis, University of Western Ontario, 2012.
