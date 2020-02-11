@@ -42,7 +42,7 @@ def cumulant_quad_form(s: int, mean: np.ndarray,
     return (
         2**(s - 1) * factorial(s)
         * (
-            np.trace(ASig)**s / s
+            np.trace(matrix_power(ASig, s)) / s
             + mean @ matrix_power(ASig, s - 1) @ A @ mean)
         )
 

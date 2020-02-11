@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from pytest import approx
 from statsmodels.stats.moment_helpers import mc2mnc, cum2mc
+from math import factorial
 
 import quadratic
 
@@ -49,3 +50,28 @@ class TestMomentsFromCumulants():
         ### Verification ###
         assert len(moments) == len(sm_moments)
         np.testing.assert_array_equal(moments, sm_moments)
+
+
+class TestCumulantQuadForm():
+    """Unit tests for cumulant_quad_form."""
+    def test_chi_squared(self):
+        """If A = Sigma = I and mu = 0, the quadratic form Q
+        is distributed as a chi-squared random variable, which has known
+        cumulants."""
+        n_cumulants = 8
+        for dof in range(1, 9):
+            ### Setup ###
+            A = np.eye(dof)
+            covar = np.eye(dof)
+            mean = np.zeros(dof)
+            correct_cumulants = np.zeros(n_cumulants)
+            cumulants = np.zeros(n_cumulants)
+
+            ### Action ###
+            for s in range(1, n_cumulants + 1):
+                correct_cumulants[s - 1] = 2**(s - 1) * factorial(s - 1) * dof
+                cumulants[s - 1] = quadratic.cumulant_quad_form(
+                    s, mean, covar, A)
+
+            ### Verification ###
+            np.testing.assert_array_equal(cumulants, correct_cumulants)
