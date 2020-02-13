@@ -2,9 +2,13 @@
 
 References:
     [Hil76] I. D. Hill, R. Hill, and R. L. Holder,
-    "Algorithm AS 99: Fitting Johnson Curves by Moments,"
-    Journal of the Royal Statistical Society. Series C (Applied Statistics),
-    vol. 25, no. 2, pp. 180–189, 1976, doi: 10.2307/2346692.
+        "Algorithm AS 99: Fitting Johnson Curves by Moments,"
+        Journal of the Royal Statistical Society. Series C (Applied Statistics),
+        vol. 25, no. 2, pp. 180–189, 1976, doi: 10.2307/2346692.
+    [Eld69] W. P. Elderton and N. L. Johnson,
+        "Systems of Frequency Curves,"
+        Cambridge university Press, 1969.
+        Ch. 7 "Translation systems".
 """
 import numpy as np
 from scipy.optimize import root
@@ -63,3 +67,55 @@ def _xi_lambda_helper(x, mu_1, mu_2, sinh_term, cosh_term):
         [0., 2 * lamb * cosh_term]
     ])
     return (error, jacobian)
+
+
+def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100):
+    assert abs(gamma_sign) == 1
+    assert beta_1 >= 0
+    assert beta_2 >= 0
+
+    # TODO check that beta-1, beta_2 are within the region that is possible
+    # for Johnson SU.
+    # This just checks that beta_1, beta_1 are in the possible region for *any*
+    # distribution.
+    assert beta_2 > beta_1 + 1
+
+    # w is shorthand for little omega in [Eld69].
+    # Initial guess at w
+    # w = ((2 * beta_2 - 16 * beta_1 - 2)**0.5 - 1)**0.5
+    w = 1.0408
+
+    beta_1_d = np.inf
+    for i in range(max_iters):
+        # Solve the quadratic on m
+        A_0 = w**5 + 3 * w**4 + 6 * w**3 + 10 * w**2 + 9 * w + 3
+        A_1 = 8 * (w**4 + w**3 + 6 * w**2 + 7 * w + 3)
+        A_2 = 8 * (w**3 + 3 * w**2 + 6 * w + 6)
+        b = (beta_2 - 3) / (w - 1)
+        m_roots = np.roots([
+            A_2 - 8 * b, A_1 - 8 * b * (w + 1),
+            A_0 - b * (w + 1)**2])
+        print('m_roots = ' + repr(m_roots))
+        m = max(m_roots)
+
+        # Update the beta_1 which results from this m
+        beta_1_d = (
+            m * (w - 1) * (4 * (w + 2) * m + 3 * (w + 1)**2)**2
+            / (2 * (2 * m + w  + 1)**3)
+            )
+
+        if abs(beta_1 - beta_1_d) < tol:
+            break
+
+        # Solve a quadratic for the updated value of w
+        w2_roots = np.roots([
+            -0.5, -0.5,
+            -1.5 - beta_2 + beta_1 / beta_1_d * (beta_2 - 0.5 * (
+                w**4 + 2 * w**2 + 3))])
+        print('w2_roots = ' + repr(w2_roots))
+        w2 = max(w2_roots)
+        w = w2**0.5
+    delta = (np.log(w))**(-0.5)
+    gamma = delta * np.arcsinh((m / w)**0.5)
+    gamma *= gamma_sign
+    return gamma, delta

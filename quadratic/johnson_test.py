@@ -56,3 +56,22 @@ class TestJohnsonSuParams():
         assert lamb == approx(lamb_true)
         assert gamma == approx(gamma_true)
         assert delta == approx(delta_true)
+
+
+class TestFindGammaDelta():
+    """unit tests for find_gamma_delta."""
+
+    def test_eld69_example(self):
+        ### Setup ###
+        beta_1 = 0.0053656
+        beta_2 = 3.172912
+
+        ### Action ###
+        gamma, delta = johnson.find_gamma_delta(
+            1, beta_1, beta_2)
+
+        ### Verification ###
+        gamma_correct = 0.604277
+        delta_correct = 5.061155
+        assert gamma == approx(gamma_correct, rel=5e-3)
+        assert delta == approx(delta_correct, rel=5e-3)
