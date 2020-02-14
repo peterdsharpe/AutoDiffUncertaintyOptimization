@@ -10,7 +10,8 @@ import johnson
 def main():
     n_dim = 2
     A = np.eye(n_dim)
-    A[1, 1] = -1.
+    # A[1, 1] = -1.
+    A[1, 1] = -0.5
     covar = np.eye(n_dim)
     mean = np.zeros(n_dim)
 
@@ -69,7 +70,7 @@ def main():
     plt.plot(
         q, approx(q), label='Approx.',
         color='tab:blue', linestyle='--')
-    bins = np.linspace(-8, 8, 81)
+    bins = np.linspace(-10, 10, 101)
     bins[0] = -np.inf
     bins[-1] = np.inf
     plt.hist(
@@ -78,6 +79,7 @@ def main():
         alpha=0.5, color='black', label='Samples')
     plt.xlabel('q')
     plt.ylabel('pdf(q) [-]')
+    plt.yscale('log')
     plt.legend()
 
 
