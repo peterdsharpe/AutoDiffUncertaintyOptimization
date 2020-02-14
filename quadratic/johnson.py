@@ -26,7 +26,11 @@ def johnson_su_params_from_moments(central_moments):
     if abs(beta_1) < 1e-9:
         # Symmetric case
         omega = ((2 * beta_2 - 2)**0.5 - 1)**0.5
-        delta = np.log(omega)**(-0.5)
+        if omega == 1.:
+            # Approximating a normal distribution
+            delta = 1e12 # a big number
+        else:
+            delta = np.log(omega)**(-0.5)
         gamma = 0.
     else:
         # Asymmetric case
@@ -42,7 +46,8 @@ def johnson_su_params_from_moments(central_moments):
     guess = (central_moments[1], central_moments[2]**0.5)
     sol = root(_xi_lambda_helper, guess, args, jac=True)
     if not sol.success:
-        raise RuntimeError('Root finding failed.')
+        # raise RuntimeError('Root finding failed.')
+        print('Root finding failed!')
     xi, lamb = sol.x
     return (xi, lamb, gamma, delta)
 
@@ -75,11 +80,12 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100, w_gues
     assert beta_1 >= 0
     assert beta_2 >= 0
 
-    # TODO check that beta-1, beta_2 are within the region that is possible
-    # for Johnson SU.
-    # This just checks that beta_1, beta_1 are in the possible region for *any*
+    # Check that beta_1, beta_1 are in the possible region for *any*
     # distribution.
     assert beta_2 > beta_1 + 1
+    # Check that beta-1, beta_2 are within the region that is possible
+    # for Johnson SU.
+    assert beta_2 > min_beta_2_su(beta_1)
 
     # w is shorthand for little omega in [Eld69].
     # Initial guess at w
@@ -96,15 +102,17 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100, w_gues
         A_0 = w**5 + 3 * w**4 + 6 * w**3 + 10 * w**2 + 9 * w + 3
         A_1 = 8 * (w**4 + 3 * w**3 + 6 * w**2 + 7 * w + 3)
         A_2 = 8 * (w**3 + 3 * w**2 + 6 * w + 6)
-        print('A_0 = {:.3f}'.format(A_0))
-        print('A_1 = {:.3f}'.format(A_1))
-        print('A_2 = {:.3f}'.format(A_2))
+        # print('A_0 = {:.3f}'.format(A_0))
+        # print('A_1 = {:.3f}'.format(A_1))
+        # print('A_2 = {:.3f}'.format(A_2))
         b = (beta_2 - 3) / (w - 1)
         m_roots = np.roots([
             A_2 - 8 * b,
             A_1 - 8 * b * (w + 1),
             A_0 - 2 * b * (w + 1)**2])
         m = max(m_roots)
+        assert np.isreal(m)
+
         # print('m_roots  = ' + repr(m_roots))
 
         # Update the beta_1 which results from this m
@@ -123,7 +131,17 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100, w_gues
                 w**4 + 2 * w**2 + 3))])
         w2 = max(w2_roots)
         w = w2**0.5
+        assert np.isreal(w)
     delta = (np.log(w))**(-0.5)
     gamma = delta * np.arcsinh((m / w)**0.5)
     gamma *= gamma_sign
     return gamma, delta
+
+
+def min_beta_2_su(beta_1):
+    """The minimum possible beta_2 for a Johnson SU distribution."""
+    w_roots = np.roots([
+        1, 3, 0, -4 - beta_1])
+    w = max(w_roots)
+    beta_2 = w**4 + 2 * w**3 + 3 * w**2 - 3
+    return beta_2
