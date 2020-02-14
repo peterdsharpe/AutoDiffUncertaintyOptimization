@@ -68,6 +68,22 @@ class TestFindGammaDelta():
 
         ### Action ###
         gamma, delta = johnson.find_gamma_delta(
+            1, beta_1, beta_2,
+            max_iters=3, w_guess=1.0408108)
+
+        ### Verification ###
+        gamma_correct = 0.604277
+        delta_correct = 5.061155
+        assert gamma == approx(gamma_correct, rel=5e-3)
+        assert delta == approx(delta_correct, rel=5e-3)
+
+    def test_eld69_example_no_guess(self):
+        ### Setup ###
+        beta_1 = 0.0053656
+        beta_2 = 3.172912
+
+        ### Action ###
+        gamma, delta = johnson.find_gamma_delta(
             1, beta_1, beta_2)
 
         ### Verification ###

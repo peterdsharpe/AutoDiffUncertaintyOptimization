@@ -69,7 +69,7 @@ def _xi_lambda_helper(x, mu_1, mu_2, sinh_term, cosh_term):
     return (error, jacobian)
 
 
-def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100):
+def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100, w_guess=None):
     assert abs(gamma_sign) == 1
     assert beta_1 >= 0
     assert beta_2 >= 0
@@ -82,20 +82,22 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100):
 
     # w is shorthand for little omega in [Eld69].
     # Initial guess at w
-    # w = ((2 * beta_2 - 16 * beta_1 - 2)**0.5 - 1)**0.5
-    w = 1.0408
+    if w_guess is None:
+        w = ((2 * beta_2 - 16 * beta_1 - 2)**0.5 - 1)**0.5
+    else:
+        w = w_guess
 
     beta_1_d = np.inf
     for i in range(max_iters):
         # Solve the quadratic on m
         A_0 = w**5 + 3 * w**4 + 6 * w**3 + 10 * w**2 + 9 * w + 3
-        A_1 = 8 * (w**4 + w**3 + 6 * w**2 + 7 * w + 3)
+        A_1 = 8 * (w**4 + 3 * w**3 + 6 * w**2 + 7 * w + 3)
         A_2 = 8 * (w**3 + 3 * w**2 + 6 * w + 6)
         b = (beta_2 - 3) / (w - 1)
         m_roots = np.roots([
-            A_2 - 8 * b, A_1 - 8 * b * (w + 1),
-            A_0 - b * (w + 1)**2])
-        print('m_roots = ' + repr(m_roots))
+            A_2 - 8 * b,
+            A_1 - 8 * b * (w + 1),
+            A_0 - 2 * b * (w + 1)**2])
         m = max(m_roots)
 
         # Update the beta_1 which results from this m
@@ -107,12 +109,11 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100):
         if abs(beta_1 - beta_1_d) < tol:
             break
 
-        # Solve a quadratic for the updated value of w
+        # Solve a quadratic expression on w**2 for the updated value of w
         w2_roots = np.roots([
-            -0.5, -0.5,
-            -1.5 - beta_2 + beta_1 / beta_1_d * (beta_2 - 0.5 * (
+            0.5, 1.,
+            1.5 - beta_2 + beta_1 / beta_1_d * (beta_2 - 0.5 * (
                 w**4 + 2 * w**2 + 3))])
-        print('w2_roots = ' + repr(w2_roots))
         w2 = max(w2_roots)
         w = w2**0.5
     delta = (np.log(w))**(-0.5)
