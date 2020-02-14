@@ -81,6 +81,29 @@ class TestJohnsonSuParams():
         assert gamma == approx(gamma_true)
         assert delta == approx(delta_true)
 
+    def test_asym_xi_2(self):
+        """Asymmetric distribution, xi = 2."""
+        xi_true = 2.
+        lamb_true = 1.
+        gamma_true = 1.
+        delta_true = 2.
+        dist = scipy.stats.johnsonsu(
+            loc=xi_true, scale=lamb_true,
+            a=gamma_true, b=delta_true)
+
+        moments = np.zeros(5)
+        central_moments = np.zeros(5)
+        for i in range(5):
+            moments[i] = dist.moment(i)
+        central_moments[1:] = mnc2mc(moments[1:])
+        central_moments[0] = 1.
+
+        xi, lamb, gamma, delta = johnson.johnson_su_params_from_moments(
+            central_moments)
+        assert xi == approx(xi_true, abs=1e-6)
+        assert lamb == approx(lamb_true)
+        assert gamma == approx(gamma_true)
+        assert delta == approx(delta_true)
 
 class TestFindGammaDelta():
     """unit tests for find_gamma_delta."""
