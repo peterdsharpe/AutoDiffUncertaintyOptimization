@@ -18,7 +18,7 @@ def johnson_su_params_from_moments(central_moments):
     assert len(central_moments) == 5
     assert central_moments[0] == 1
     # beta_1 is a measure of skewness
-    beta_1 = central_moments[3] / central_moments[2]**(3/2.)
+    beta_1 = (central_moments[3] / central_moments[2]**(3/2.))**2
     # beta_2 is a measure of kurtosis
     beta_2 = central_moments[4] / central_moments[2]**2
 
@@ -30,8 +30,9 @@ def johnson_su_params_from_moments(central_moments):
         gamma = 0.
     else:
         # Asymmetric case
-        # TODO
-        raise NotImplementedError()
+        gamma, delta = find_gamma_delta(
+            -1 * np.sign(central_moments[3]), beta_1, beta_2)
+        omega = np.exp(delta**(-2))
 
     ### Find xi and lambda parameters ###
     sinh_term = omega**0.5 * np.sinh(gamma / delta)
@@ -83,9 +84,11 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100, w_gues
     # w is shorthand for little omega in [Eld69].
     # Initial guess at w
     if w_guess is None:
-        w = ((2 * beta_2 - 16 * beta_1 - 2)**0.5 - 1)**0.5
+        w = ((2 * beta_2 - 2 * beta_1 - 2)**0.5 - 1)**0.5
+        # w = ((2 * beta_2 - 2)**0.5 - 1)**0.5
     else:
         w = w_guess
+    # print('w init = {:f}'.format(w))
 
     beta_1_d = np.inf
     for i in range(max_iters):
@@ -93,12 +96,16 @@ def find_gamma_delta(gamma_sign, beta_1, beta_2, tol=1e-9, max_iters=100, w_gues
         A_0 = w**5 + 3 * w**4 + 6 * w**3 + 10 * w**2 + 9 * w + 3
         A_1 = 8 * (w**4 + 3 * w**3 + 6 * w**2 + 7 * w + 3)
         A_2 = 8 * (w**3 + 3 * w**2 + 6 * w + 6)
+        print('A_0 = {:.3f}'.format(A_0))
+        print('A_1 = {:.3f}'.format(A_1))
+        print('A_2 = {:.3f}'.format(A_2))
         b = (beta_2 - 3) / (w - 1)
         m_roots = np.roots([
             A_2 - 8 * b,
             A_1 - 8 * b * (w + 1),
             A_0 - 2 * b * (w + 1)**2])
         m = max(m_roots)
+        # print('m_roots  = ' + repr(m_roots))
 
         # Update the beta_1 which results from this m
         beta_1_d = (
