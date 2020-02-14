@@ -49,6 +49,51 @@ def cumulant_quad_form(s: int, mean: np.ndarray,
             + mean @ matrix_power(ASig, s - 1) @ A @ mean)
         )
 
+def cumulant_quad_expr(s: int, mean: np.ndarray,
+                       covar: np.ndarray, A: np.ndarray,
+                       a: np.ndarray):
+    """Get the s-th cumulant of a quadratic expression of a normal random variable.
+
+    This function computes the cumulants of Q*, where
+        Q* = x^T A x +  a^T x
+    and
+        x ~ N(mean, covar)
+
+    Arguments:
+        s: Compute the `s`-th cumulant.
+        mean: Mean vector of x.
+        covar: Covariance matrix of x.
+        A: Symmetric matrix in the quadratic expression.
+        a: Vector in the quadratic expression.
+
+    See [Moh12] equation 2.14.
+    """
+    # Check inputs
+    assert s >= 1
+    s = int(s)
+    assert mean.ndim == 1
+    assert covar.ndim == 2
+    assert covar.shape[0] == mean.shape[0]
+    assert covar.shape[1] == mean.shape[0]
+    assert A.ndim == 2
+    assert A.shape[0] == mean.shape[0]
+    assert A.shape[1] == mean.shape[0]
+    assert a.ndim == 1
+    assert a.shape[0] == mean.shape[0]
+
+    ASig = A @ covar
+
+    if s == 1:
+        return np.trace(ASig) + mean @ A @ mean + a @ mean
+    return (
+        2**(s - 1) * factorial(s)
+        * (
+            np.trace(matrix_power(ASig, s)) / s
+            + 0.25 * a @ matrix_power(covar @ A, s - 2) @ covar @ a
+            + mean @ matrix_power(ASig, s - 1) @ A @ mean
+            + a @ matrix_power(covar @ A, s - 1) @ A @ mean)
+        )
+
 
 def moments_from_cumulants(k: np.ndarray):
     """Compute the first h moments from the first h-1 cumulants.

@@ -76,6 +76,60 @@ class TestCumulantQuadForm():
             ### Verification ###
             np.testing.assert_array_equal(cumulants, correct_cumulants)
 
+
+class TestCumulantQuadExpr():
+    """Unit tests of cumulant_quad_expr"""
+
+    def test_chi_squared(self):
+        """If A = Sigma = I and mu = a = 0, the quadratic expression Q*
+        is distributed as a chi-squared random variable, which has known
+        cumulants."""
+        n_cumulants = 8
+        for dof in range(1, 9):
+            ### Setup ###
+            A = np.eye(dof)
+            covar = np.eye(dof)
+            mean = np.zeros(dof)
+            a = np.zeros(dof)
+            correct_cumulants = np.zeros(n_cumulants)
+            cumulants = np.zeros(n_cumulants)
+
+            ### Action ###
+            for s in range(1, n_cumulants + 1):
+                correct_cumulants[s - 1] = 2**(s - 1) * factorial(s - 1) * dof
+                cumulants[s - 1] = cumulants_moments.cumulant_quad_expr(
+                    s, mean, covar, A, a)
+
+            ### Verification ###
+            np.testing.assert_array_equal(cumulants, correct_cumulants)
+
+    def test_normal(self):
+        """If
+            Sigma = I
+            A = 0
+            mu = 0
+            a = 1/n
+        the quadratic expression Q* is distributed as the average of
+        n standard normal random variables, which has known cumulants."""
+        for dof in range(1, 9):
+            ### Setup ###
+            A = np.zeros((dof, dof))
+            covar = np.eye(dof)
+            mean = np.zeros(dof)
+            a = np.ones(dof) / dof           
+            cumulants = np.zeros(4)
+            # Cumulants of the standard normal distribution
+            correct_cumulants = np.array([0., 1. / dof, 0., 0.])
+
+            ### Action ###
+            for s in range(1, 4 + 1):
+                cumulants[s - 1] = cumulants_moments.cumulant_quad_expr(
+                    s, mean, covar, A, a)
+
+            ### Verification ###
+            np.testing.assert_allclose(cumulants, correct_cumulants)
+
+
 class TestGammaMoment():
     """Unit tests for gamma_moment."""
 
