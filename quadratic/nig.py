@@ -7,6 +7,7 @@ References:
         of random variables: A new approach," Econometric Society,
         503, Aug. 2004. https://www.semanticscholar.org/paper/Approximating-the-probability-distribution-of-of-A-Eriksson-Forsberg/dbf77d60d87b39e5547b3fa70fde81b4798d7877
 """
+import copy
 import numpy as np
 
 
@@ -20,6 +21,19 @@ def is_feasible(cumulants):
     k3 = cumulants[2]
     k4 = cumulants[3]
     return 3 * k4 * k2 / k3**2 > 5
+
+
+def make_feasible(cumulants):
+    """Increase k4 (~kurtosis?) so that the cumulants are feasible for the NIG distribution."""
+    if is_feasible(cumulants):
+        return cumulants
+    cumulants = copy.deepcopy(cumulants)
+    k2 = cumulants[1]
+    k3 = cumulants[2]
+    k4 = cumulants[3]
+    k4_min = 5 / 3 * k3**2 / k2 + 1e-6
+    cumulants[3] = k4_min
+    return cumulants 
 
 
 def parameters_from_cumulants(cumulants):
