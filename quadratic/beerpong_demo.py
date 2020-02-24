@@ -128,7 +128,53 @@ def plot_range_pdf():
     plt.ylabel('pdf($r$) [m$^{-1}$]')
     plt.ylim([0, plt.ylim()[1]])
     plt.legend()
-    plt.title('Range pdf for different launch angles')
+    plt.title(
+        'Range pdf for different launch angles'
+        + '\nstddev($v_{{init}}$) = {:.2f} m s$^{{-1}}$, stddev($\\theta$) = {:.1f} deg'.format(
+            sigma_v, np.rad2deg(sigma_theta)))
+
+def plot_range_pdf_vs_samples(sigma_v=0.1, sigma_theta=np.deg2rad(1.)):
+    v_init = 5.
+    covar = np.diag([sigma_v**2, sigma_theta**2])
+    mean = np.array([0., 0.])
+
+    plt.figure()
+
+    theta = np.pi / 6
+    r_0 = projectile_range(v_init, theta)
+    a = projectile_range_jac(v_init, theta)
+    A = projectile_range_hes(v_init, theta)
+
+    approx_dist = quadratic.approx_quad_expr_nig(
+        mean, covar, A, a, r_0)
+
+    # Sample from true dist
+    n_sample = int(1e5)
+    x_samples = np.random.multivariate_normal(
+        [v_init, theta], covar, n_sample)
+    range_samples = np.array([
+        projectile_range(*x) for x in x_samples])
+
+    r = np.linspace(0., 3.5, 200)
+    bins = np.linspace(1, 3.5, 100)
+
+    plt.plot(
+        r, approx_dist.pdf(r),
+        label='Quadratic approximation dist.', color='tab:blue')
+    plt.hist(
+        range_samples, density=True, histtype='stepfilled',
+        bins=bins,
+        alpha=0.5, color='black', label='Samples from true dist.')
+
+
+    plt.xlabel('Range $r$ [m]')
+    plt.ylabel('pdf($r$) [m$^{-1}$]')
+    plt.ylim([0, plt.ylim()[1]])
+    plt.legend()
+    plt.title(
+        'Range pdf: quad. approx. vs. samples from true distribution'
+        + '\nstddev($v_{{init}}$) = {:.2f} m s$^{{-1}}$, stddev($\\theta$) = {:.1f} deg'.format(
+            sigma_v, np.rad2deg(sigma_theta)))
 
 
 def plot_stddev_vs_launch_angle():
@@ -175,5 +221,7 @@ if __name__ == '__main__':
     plot_derivs()
     plot_quad_approx()
     plot_range_pdf()
+    plot_range_pdf_vs_samples()
+    plot_range_pdf_vs_samples(sigma_theta=np.deg2rad(5.))
     plot_stddev_vs_launch_angle()
     plt.show()
