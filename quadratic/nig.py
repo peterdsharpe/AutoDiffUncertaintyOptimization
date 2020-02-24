@@ -50,6 +50,9 @@ def parameters_from_cumulants(cumulants):
     k4 = cumulants[3]
     rho = 3 * k4 * k2 / k3**2 - 4
     alpha_bar = 3 * (4 / rho + 1) * (1 - 1 / rho)**(-0.5) * k2**2 / k4
+    # Limit alpha to avoid overflows
+    alpha_bar = min(alpha_bar, np.log(np.finfo(float).max))
+
     beta_bar = np.sign(k3) / rho**0.5 * alpha_bar
     mu = k1 - np.sign(k3) / rho**0.5 * (
         (12 / rho + 3) * k2**3 / k4)**0.5
