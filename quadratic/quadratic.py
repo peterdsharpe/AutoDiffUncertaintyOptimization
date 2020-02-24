@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.stats
 
 import cumulants_moments
 import nig
@@ -15,13 +14,15 @@ def approx_quad_expr_nig(
     for s in range(1, n_cumulants + 1):
         cumulants[s - 1] = cumulants_moments.cumulant_quad_expr(
             s, mean, covar, A, a, d)
+    print(cumulants)
 
     # Compute the parameters of the NIG dist which has those cumulants
     cumulants_approx = nig.make_feasible(cumulants)
     alpha_bar, beta_bar, mu, delta = nig.parameters_from_cumulants(
         cumulants_approx)
+    print(alpha_bar, beta_bar, mu, delta)
 
-    approx_dist = scipy.stats.norminvgauss(
+    approx_dist = nig.norminvgauss(
         loc=mu, scale=delta,
         a=alpha_bar, b=beta_bar)
     return approx_dist

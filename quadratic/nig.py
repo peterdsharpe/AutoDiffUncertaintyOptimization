@@ -9,7 +9,8 @@ References:
 """
 import copy
 import numpy as np
-
+import scipy.special as sc
+from scipy.stats import rv_continuous, invgauss, norm
 
 def is_feasible(cumulants):
     """Are these cumulants feasible for the NIG distribution?
@@ -33,7 +34,7 @@ def make_feasible(cumulants):
     k4 = cumulants[3]
     k4_min = 5 / 3 * k3**2 / k2 + 1e-6
     cumulants[3] = k4_min
-    return cumulants 
+    return cumulants
 
 
 def parameters_from_cumulants(cumulants):
@@ -50,11 +51,43 @@ def parameters_from_cumulants(cumulants):
     k4 = cumulants[3]
     rho = 3 * k4 * k2 / k3**2 - 4
     alpha_bar = 3 * (4 / rho + 1) * (1 - 1 / rho)**(-0.5) * k2**2 / k4
-    # Limit alpha to avoid overflows
-    alpha_bar = min(alpha_bar, np.log(np.finfo(float).max))
-
     beta_bar = np.sign(k3) / rho**0.5 * alpha_bar
     mu = k1 - np.sign(k3) / rho**0.5 * (
         (12 / rho + 3) * k2**3 / k4)**0.5
     delta = (3 * k2**3 * (4 / rho + 1) * (1 - 1 / rho) / k4)**0.5
     return alpha_bar, beta_bar, mu, delta
+
+
+class norminvgauss_gen(rv_continuous):
+    _support_mask = rv_continuous._open_support_mask
+
+    def _argcheck(self, a, b):
+        return (a > 0) & (np.absolute(b) < a)
+
+    def _pdf(self, x, a, b):
+        """This implementation of the NIG pdf is slightly different
+        that the implementation in scipy. The scipy implementation has overflow
+        errors for a > ~710; this one does not."""
+        gamma = np.sqrt(a**2 - b**2)
+        fac1 = a / np.pi
+        sq = np.hypot(1, x)  # reduce overflows
+        exp_arg = gamma + b * x - a * sq
+        return fac1 * sc.k1e(a * sq) * np.exp(exp_arg) / sq
+
+    def _rvs(self, a, b):
+        # note: X = b * V + sqrt(V) * X is norminvgaus(a,b) if X is standard
+        # normal and V is invgauss(mu=1/sqrt(a**2 - b**2))
+        gamma = np.sqrt(a**2 - b**2)
+        sz, rndm = self._size, self._random_state
+        ig = invgauss.rvs(mu=1/gamma, size=sz, random_state=rndm)
+        return b * ig + np.sqrt(ig) * norm.rvs(size=sz, random_state=rndm)
+
+    def _stats(self, a, b):
+        gamma = np.sqrt(a**2 - b**2)
+        mean = b / gamma
+        variance = a**2 / gamma**3
+        skewness = 3.0 * b / (a * np.sqrt(gamma))
+        kurtosis = 3.0 * (1 + 4 * b**2 / a**2) / gamma
+        return mean, variance, skewness, kurtosis
+
+norminvgauss = norminvgauss_gen(name="norminvgauss")
