@@ -1,8 +1,10 @@
+"""Unit tests for cumulants_moments module."""
+#pylint: disable=invalid-name,no-self-use
+from math import factorial
 import numpy as np
 import pytest
 from pytest import approx
 from statsmodels.stats.moment_helpers import mc2mnc, cum2mc
-from math import factorial
 
 import cumulants_moments
 
@@ -91,6 +93,7 @@ class TestCumulantQuadExpr():
             covar = np.eye(dof)
             mean = np.zeros(dof)
             a = np.zeros(dof)
+            d = 0
             correct_cumulants = np.zeros(n_cumulants)
             cumulants = np.zeros(n_cumulants)
 
@@ -98,7 +101,7 @@ class TestCumulantQuadExpr():
             for s in range(1, n_cumulants + 1):
                 correct_cumulants[s - 1] = 2**(s - 1) * factorial(s - 1) * dof
                 cumulants[s - 1] = cumulants_moments.cumulant_quad_expr(
-                    s, mean, covar, A, a)
+                    s, mean, covar, A, a, d)
 
             ### Verification ###
             np.testing.assert_array_equal(cumulants, correct_cumulants)
@@ -116,7 +119,8 @@ class TestCumulantQuadExpr():
             A = np.zeros((dof, dof))
             covar = np.eye(dof)
             mean = np.zeros(dof)
-            a = np.ones(dof) / dof           
+            a = np.ones(dof) / dof
+            d = 0
             cumulants = np.zeros(4)
             # Cumulants of the standard normal distribution
             correct_cumulants = np.array([0., 1. / dof, 0., 0.])
@@ -124,7 +128,7 @@ class TestCumulantQuadExpr():
             ### Action ###
             for s in range(1, 4 + 1):
                 cumulants[s - 1] = cumulants_moments.cumulant_quad_expr(
-                    s, mean, covar, A, a)
+                    s, mean, covar, A, a, d)
 
             ### Verification ###
             np.testing.assert_allclose(cumulants, correct_cumulants)

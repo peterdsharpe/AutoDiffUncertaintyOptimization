@@ -49,13 +49,14 @@ def cumulant_quad_form(s: int, mean: np.ndarray,
             + mean @ matrix_power(ASig, s - 1) @ A @ mean)
         )
 
+
 def cumulant_quad_expr(s: int, mean: np.ndarray,
                        covar: np.ndarray, A: np.ndarray,
-                       a: np.ndarray):
+                       a: np.ndarray, d: float):
     """Get the s-th cumulant of a quadratic expression of a normal random variable.
 
     This function computes the cumulants of Q*, where
-        Q* = x^T A x +  a^T x
+        Q* = x^T A x +  a^T x + d
     and
         x ~ N(mean, covar)
 
@@ -84,7 +85,7 @@ def cumulant_quad_expr(s: int, mean: np.ndarray,
     ASig = A @ covar
 
     if s == 1:
-        return np.trace(ASig) + mean @ A @ mean + a @ mean
+        return np.trace(ASig) + mean @ A @ mean + a @ mean + d
     return (
         2**(s - 1) * factorial(s)
         * (
