@@ -21,6 +21,8 @@ def is_feasible(cumulants):
     k2 = cumulants[1]
     k3 = cumulants[2]
     k4 = cumulants[3]
+    if k3 == 0:
+        return True
     return 3 * k4 * k2 / k3**2 > 5
 
 
@@ -49,12 +51,17 @@ def parameters_from_cumulants(cumulants):
     k2 = cumulants[1]
     k3 = cumulants[2]
     k4 = cumulants[3]
-    rho = 3 * k4 * k2 / k3**2 - 4
-    alpha_bar = 3 * (4 / rho + 1) * (1 - 1 / rho)**(-0.5) * k2**2 / k4
-    beta_bar = np.sign(k3) / rho**0.5 * alpha_bar
-    mu = k1 - np.sign(k3) / rho**0.5 * (
-        (12 / rho + 3) * k2**3 / k4)**0.5
-    delta = (3 * k2**3 * (4 / rho + 1) * (1 - 1 / rho) / k4)**0.5
+    if k3 == 0:
+        # rho_inv is 1 / rho.
+        rho_inv = 0
+    else:
+        rho = 3 * k4 * k2 / k3**2 - 4
+        rho_inv = 1 / rho
+    alpha_bar = 3 * (4 * rho_inv + 1) * (1 - rho_inv)**(-0.5) * k2**2 / k4
+    beta_bar = np.sign(k3) * rho_inv**0.5 * alpha_bar
+    mu = k1 - np.sign(k3) * rho_inv**0.5 * (
+        (12 * rho_inv + 3) * k2**3 / k4)**0.5
+    delta = (3 * k2**3 * (4 * rho_inv + 1) * (1 - rho_inv) / k4)**0.5
     return alpha_bar, beta_bar, mu, delta
 
 
