@@ -9,7 +9,7 @@ def approx_quad_expr_nig(
         mean: np.ndarray, covar: np.ndarray,
         A: np.ndarray, a: np.array, d: float):
     """Approximate the distribution of a quadratic expression with a
-    Normalized Inverse Gaussian distribution."""
+    Normal-Inverse Gaussian distribution."""
     n_cumulants = 4
     cumulants = np.zeros(n_cumulants)
     for s in range(1, n_cumulants + 1):
