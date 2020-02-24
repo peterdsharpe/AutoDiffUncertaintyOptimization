@@ -66,30 +66,36 @@ def plot_quad_approx():
 
 
 def plot_range_pdf():
+    """TODO Something is very wrong!"""
     v_init = 2.
-    theta = np.pi / 3
-    sigma_v = 0.1
-    sigma_theta = np.deg2rad(1.)
-    mean = np.array([v_init, theta])
+    sigma_v = 0.01
+    sigma_theta = np.deg2rad(5.)
     covar = np.diag([sigma_v**2, sigma_theta**2])
 
-    r_0 = projectile_range(v_init, theta)
-    a = projectile_range_jac(v_init, theta)
-    A = projectile_range_hes(v_init, theta)
-
-    approx_dist = quadratic.approx_quad_expr_nig(
-        mean, covar, A, a, r_0)
-    import ipdb; ipdb.set_trace()  # breakpoint 031c9f38 //
-    
-
-    r = np.linspace(0, 1.)
-
     plt.figure()
-    plt.plot(
-        r, approx_dist.pdf(r),
-        label='$\\theta = {:.0f}$ deg. (approx. dist.)'.format(
-            np.rad2deg(theta)),
-        color='tab:blue')
+
+    thetas = (np.pi / 6, np.pi / 4, np.pi / 3)
+    for i, theta in enumerate(thetas):
+        mean = np.array([v_init, theta])
+
+        r_0 = projectile_range(v_init, theta)
+        a = projectile_range_jac(v_init, theta)
+        A = projectile_range_hes(v_init, theta)
+
+        approx_dist = quadratic.approx_quad_expr_nig(
+            mean, covar, A, a, r_0)
+
+        r = np.linspace(-2., 4., 100)
+
+        color  = 'C{:d}'.format(i)
+        plt.plot(
+            r, approx_dist.pdf(r),
+            label='$\\theta = {:.0f}$ deg. (approx. dist.)'.format(
+                np.rad2deg(theta)),
+            color=color)
+        plt.scatter(
+            r_0, 0.5, marker='x', color=color)
+
     plt.xlabel('Range $r$ [m]')
     plt.ylabel('pdf($r$) [m$^{-1}$]')
     plt.ylim([0, plt.ylim()[1]])
