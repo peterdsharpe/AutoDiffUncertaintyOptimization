@@ -32,7 +32,7 @@ def plot_quad_approx():
     """Plot the quadratic approximation of the range function
         wrt theta."""
     theta = np.linspace(0, np.pi / 2)
-    v_init = 2.
+    v_init = 5.
     range_true = projectile_range(v_init, theta)
 
     plt.figure()
@@ -41,7 +41,7 @@ def plot_quad_approx():
         color='black', label='True range')
 
     # Quadratic approximation of the range function.
-    fit_points = (np.pi / 8, np.pi / 4, (3/8) * np.pi)
+    fit_points = (np.pi / 6, np.pi / 4, np.pi / 3)
     for i, theta_0 in enumerate(fit_points):
         r_0 = projectile_range(v_init, theta_0)
         a = projectile_range_jac(v_init, theta_0)
@@ -67,8 +67,8 @@ def plot_quad_approx():
 
 def plot_range_pdf():
     """TODO Something is very wrong!"""
-    v_init = 2.
-    sigma_v = 0.01
+    v_init = 5.
+    sigma_v = 0.1
     sigma_theta = np.deg2rad(5.)
     covar = np.diag([sigma_v**2, sigma_theta**2])
 
@@ -76,7 +76,8 @@ def plot_range_pdf():
 
     thetas = (np.pi / 6, np.pi / 4, np.pi / 3)
     for i, theta in enumerate(thetas):
-        mean = np.array([v_init, theta])
+        # mean = np.array([v_init, theta])
+        mean = np.array([0., 0.])
 
         r_0 = projectile_range(v_init, theta)
         a = projectile_range_jac(v_init, theta)
@@ -85,7 +86,7 @@ def plot_range_pdf():
         approx_dist = quadratic.approx_quad_expr_nig(
             mean, covar, A, a, r_0)
 
-        r = np.linspace(-2., 4., 100)
+        r = np.linspace(0., 3.5, 100)
 
         color  = 'C{:d}'.format(i)
         plt.plot(
@@ -103,6 +104,6 @@ def plot_range_pdf():
 
 
 if __name__ == '__main__':
-    # plot_quad_approx()
+    plot_quad_approx()
     plot_range_pdf()
     plt.show()
