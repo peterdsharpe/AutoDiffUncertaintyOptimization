@@ -1,4 +1,4 @@
-"""Normailized Inverse Gaussian distribution.
+"""Normalized Inverse Gaussian distribution.
 
 References:
     [WikiNIG] https://en.wikipedia.org/wiki/Normal-inverse_Gaussian_distribution
@@ -55,3 +55,4 @@ def parameters_from_cumulants(cumulants):
         (12 / rho + 3) * k2**3 / k4)**0.5
     delta = (3 * k2**3 * (4 / rho + 1) * (1 - 1 / rho) / k4)**0.5
     return alpha_bar, beta_bar, mu, delta
+
