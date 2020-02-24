@@ -2,6 +2,7 @@
 import numpy as np
 import scipy.stats
 from scipy import constants
+import scipy.integrate
 from matplotlib import pyplot as plt
 
 import quadratic
@@ -217,6 +218,39 @@ def plot_stddev_vs_launch_angle():
     plt.tight_layout()
 
 
+def prob_in_cup():
+    ### Cup properties ###
+    # Cup location [units: meter]
+    range_cup_center = 2.5
+    # Cup radius [units: meter]
+    radius_cup = 0.04
+
+    ### Trajectory properties ###
+    v_init = 5.
+    theta =  np.pi / 4
+    sigma_v = 0.1
+    sigma_theta = np.deg2rad(1.)
+    covar = np.diag([sigma_v**2, sigma_theta**2])
+    mean = np.array([0., 0.])
+
+    ### Quadratic approximation of range distribution ###
+    r_0 = projectile_range(v_init, theta)
+    a = projectile_range_jac(v_init, theta)
+    A = projectile_range_hes(v_init, theta)
+    approx_dist = quadratic.approx_quad_expr_nig(
+        mean, covar, A, a, r_0)
+
+    # Integrate the pdf to get the probability that the ball lands in the cup.
+    prob_in_cup = scipy.integrate.quad(
+        approx_dist.pdf,
+        a=range_cup_center - radius_cup,
+        b=range_cup_center + radius_cup
+        )[0]
+    print('Probability of shooting ball into cup = {:.4f}'.format(
+        prob_in_cup))
+
+
+
 if __name__ == '__main__':
     plot_derivs()
     plot_quad_approx()
@@ -224,4 +258,5 @@ if __name__ == '__main__':
     plot_range_pdf_vs_samples()
     plot_range_pdf_vs_samples(sigma_theta=np.deg2rad(5.))
     plot_stddev_vs_launch_angle()
+    prob_in_cup()
     plt.show()

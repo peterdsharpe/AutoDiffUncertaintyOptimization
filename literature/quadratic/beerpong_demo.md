@@ -37,3 +37,8 @@ If we want to get the ball into a cup accurately, we want to choose a trajectory
 If stddev($v_{init}$) is large, initial velocity is the dominant source of uncertainty. The lowest stddev($r$) is achieved at $\theta$ = 0 or 90 degrees, where $dr /dv = 0$. (recall figure "Partial derivatives of range").
 
  If stddev($v_{init}$) is small, launch angle is the dominant source of uncertainty. The lowest stddev($r$) is achieved at $\theta = 45$ degrees, where $dr /d\theta = 0$.
+
+## Probability of hitting the cup
+
+The function `prob_in_cup()` uses the (approximate) pdf to calculate the probability of shooting the ball into a cup.
+
