@@ -133,3 +133,8 @@ dmypy.json
 
 # pytype static type analyzer
 .pytype/
+.idea/vcs.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/AutoDiffUncertaintyOptimization.iml

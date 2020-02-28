@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 
 import quadratic
 
+
 def demo():
     """ With A = covar = I and mean = 0, Q is a chi-squared random variable."""
     n_dim = 3
@@ -17,7 +18,7 @@ def demo():
 
     true_dist = scipy.stats.chi2(df=n_dim)
 
-    q = np.linspace(0, 10)
+    q = np.linspace(0, 10, 200)
 
     plt.figure()
     plt.plot(
@@ -47,7 +48,7 @@ def demo_neg():
 
     true_dist = scipy.stats.chi2(df=n_dim)
 
-    q = np.linspace(-10, 0)
+    q = np.linspace(-10, 0, 200)
 
     plt.figure()
     plt.plot(
@@ -83,7 +84,7 @@ def demo_expr():
     for i in range(n_sample):
         q_samples[i] = x[i] @ A @ x[i] + a @ x[i] + d
 
-    q = np.linspace(-10, 10)
+    q = np.linspace(-10, 10, 200)
 
     plt.figure()
     plt.plot(
